@@ -41,13 +41,15 @@ module CSP
 			end
 		end
 		
-		def run(args)
-			@block.call(args)
+		def run(args = nil)
+			@block.call(*args)
 		end
 	
 	end
 	
 	class ProcessList
+		
+		include Enumerable
 	
 		def initialize
 			@processes = []
@@ -70,30 +72,38 @@ module CSP
 			end
 		end
 	
-		def process(process, *args)
+		def each(&block)
+			@processes.each block
+		end
+		
+		def add(process, *args)
 			@processes << {:process => process, :args => args}
 		end
 		
 	end
 
 	class Channel
+		# FIXME: The order in which parallel processes are run shouldn't matter (Guards?)
 		# FIXME: Just the one-2-one channel for now
 		# TODO: Make sure processes get the right end of the channel
 		# TODO: Poisoning
+		# FIXME: What's going on in Ruby 1.9?
 		
 		def initialize
 			@mutex = Mutex.new
-			@condition = ConditionVariable.new
+			@condition_variable = ConditionVariable.new
 			@data = nil
-			@data_available = false
+			@ready_to_read = false
+			@ready_to_write = true
 		end
 		
 		def write(data)
 			@mutex.synchronize do
-				@condition.wait(@mutex) if @data_available
+				@condition_variable.wait(@mutex) if not @ready_to_write
 				@data = data
-				@data_available = true
-				@condition.signal
+				@ready_to_write = false
+				@ready_to_read = true
+				@condition_variable.signal
 			end
 			return data
 		end
@@ -101,16 +111,17 @@ module CSP
 		def read
 			data = nil
 			@mutex.synchronize do
-				@condition.wait(@mutex) if not @data_available
-				@data_available = false
+				@condition_variable.wait(@mutex) if not @ready_to_read
+				@ready_to_read = false
+				@ready_to_write = true
 				data = @data # Get it before it changes
-				@condition.signal
+				@condition_variable.signal
 			end
 			return data
 		end
-			
+	
 	end
 	
-	# TODO: Alternate class
+	# TODO: Alternate class (Choice?)
 
 end
