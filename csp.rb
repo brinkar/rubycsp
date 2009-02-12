@@ -83,41 +83,44 @@ module CSP
 	end
 
 	class Channel
-		# FIXME: The order in which parallel processes are run shouldn't matter (Guards?)
 		# FIXME: Just the one-2-one channel for now
 		# TODO: Make sure processes get the right end of the channel
 		# TODO: Poisoning
-		# FIXME: What's going on in Ruby 1.9?
+		# FIXME: What's going on in Ruby 1.8?
 		
 		def initialize
 			@mutex = Mutex.new
 			@condition_variable = ConditionVariable.new
 			@data = nil
-			@ready_to_read = false
-			@ready_to_write = true
+			@pending = false
 		end
-		
+	
 		def write(data)
 			@mutex.synchronize do
-				@condition_variable.wait(@mutex) if not @ready_to_write
 				@data = data
-				@ready_to_write = false
-				@ready_to_read = true
-				@condition_variable.signal
+				if @pending
+					@pending = false
+					@condition_variable.broadcast
+				else
+					@pending = true
+				end
+				@condition_variable.wait(@mutex)
 			end
-			return data
 		end
 		
 		def read
 			data = nil
 			@mutex.synchronize do
-				@condition_variable.wait(@mutex) if not @ready_to_read
-				@ready_to_read = false
-				@ready_to_write = true
+				if @pending
+					@pending = false
+				else
+					@pending = true
+					@condition_variable.wait(@mutex)
+				end
 				data = @data # Get it before it changes
-				@condition_variable.signal
+				@condition_variable.broadcast
+				data
 			end
-			return data
 		end
 	
 	end
