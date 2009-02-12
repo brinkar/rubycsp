@@ -42,7 +42,11 @@ module CSP
 		end
 		
 		def run(args = nil)
-			@block.call(*args)
+			begin 
+				@block.call(*args)
+			rescue ChannelPoison
+				puts "Dying from poison..."
+			end
 		end
 	
 	end
@@ -85,17 +89,17 @@ module CSP
 	class Channel
 		# FIXME: Just the one-2-one channel for now
 		# TODO: Make sure processes get the right end of the channel
-		# TODO: Poisoning
-		# FIXME: What's going on in Ruby 1.8?
 		
 		def initialize
 			@mutex = Mutex.new
 			@condition_variable = ConditionVariable.new
 			@data = nil
 			@pending = false
+			@poisoned = false
 		end
 	
 		def write(data)
+			raise ChannelPoison if @poisoned
 			@mutex.synchronize do
 				@data = data
 				if @pending
@@ -109,6 +113,7 @@ module CSP
 		end
 		
 		def read
+			raise ChannelPoison if @poisoned
 			data = nil
 			@mutex.synchronize do
 				if @pending
@@ -122,9 +127,18 @@ module CSP
 				data
 			end
 		end
+		
+		def poison
+			@mutex.synchronize do
+				@poisoned = true
+				@condition_variable.broadcast
+			end
+		end
 	
 	end
 	
 	# TODO: Alternate class (Choice?)
+	
+	class ChannelPoison < Exception; end
 
 end
