@@ -2,6 +2,6 @@
 
 A VERY infant library introducing CSP-like concurrent programming to the Ruby world.
 
-*Importing:* Borderline totally unusable. Still lacks a lot of very basic CSP concepts. Primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the University of Copenhagen.
+*Important:* Borderline totally unusable. Still lacks a lot of very basic CSP concepts. Primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the University of Copenhagen.
 
 Note: Currently only works in Ruby 1.9 due to some unexpected behaviour in 1.8 thread primitives.
