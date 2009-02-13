@@ -19,10 +19,3 @@ CSP::in_parallel do |list|
 	list.add reader_process, channel
 	list.add writer_process, channel
 end
-
-puts "Making sure the order doesn't matter"
-
-CSP::in_parallel do |list|
-	list.add writer_process, channel
-	list.add reader_process, channel
-end

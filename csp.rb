@@ -1,5 +1,4 @@
 require "thread"
-require "monitor"
 
 module CSP
 
@@ -27,18 +26,34 @@ module CSP
 		
 		attr_reader :id
 		
+		class << self
+			attr_accessor :processes		
+		end
+		@processes = []
+		
 		def initialize(id = nil, &block)
-			if id.nil? or id.is_a?(String) or id.is_a?(Symbol)
+			# TODO: Should also take a method symbol
+			raise "No block given to Process" if not block_given?
+			@block = block
+			if not id.nil?
+				raise "Process id must be a Symbol" if not id.is_a?(Symbol)
 				@id = id
-			else
-				raise "Process id must be String or Symbol"
+				# Save the process in a class-wide variable
+				self.class.processes << self if self.class.get(id).nil?
 			end
-			if block_given?
-				@block = block
-			else
-				# TODO: Should also take a method symbol
-				raise "No block given to Process"
+		end
+		
+		def self.get(id)
+			raise "Process id must be a Symbol" if not id.is_a? Symbol
+			list = @processes.select do |process|
+				process.id == id
 			end
+			# Returning the first match... there shouldn't be more than one.
+			return list.first
+		end
+		
+		def self.list
+			@processes
 		end
 		
 		def run(args = nil)
@@ -89,6 +104,7 @@ module CSP
 	class Channel
 		# FIXME: Just the one-2-one channel for now
 		# TODO: Make sure processes get the right end of the channel
+		# TODO: What about guards?
 		
 		def initialize
 			@mutex = Mutex.new
