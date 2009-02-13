@@ -1,7 +1,7 @@
-= SCP library in Ruby
+= CSP library in Ruby
 
-A VERY infant library introducing SCP-like concurrent programming to the Ruby world.
+A VERY infant library introducing CSP-like concurrent programming to the Ruby world.
 
-*Importing:* Borderline totally unusable. Still lacks a lot of very basic SCP concepts. Primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the University of Copenhagen.
+*Importing:* Borderline totally unusable. Still lacks a lot of very basic CSP concepts. Primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the University of Copenhagen.
 
 Note: Currently only works in Ruby 1.9 due to some unexpected behaviour in 1.8 thread primitives.
