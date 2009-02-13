@@ -1,4 +1,4 @@
-= CSP library in Ruby
+h1. CSP library in Ruby
 
 A VERY infant library introducing CSP-like concurrent programming to the Ruby world.
 
