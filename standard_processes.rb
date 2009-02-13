@@ -6,7 +6,7 @@ CSP::Process.new :identity do |cin, cout|
 	end	
 end
 
-CSP::Process.new :prefix do |cin, cout, prefix_item = nil|
+CSP::Process.new :prefix do |cin, cout, prefix_item = 0|
 	t = prefix_item
 	while true
 		cout.write t
@@ -24,7 +24,7 @@ end
 
 CSP::Process.new :successor do |cin, cout|
 	while true
-		cout.write cin.read+1
+		cout.write(cin.read+1)
 	end	
 end
 

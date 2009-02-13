@@ -56,14 +56,15 @@ module CSP
 			@processes
 		end
 		
-		def run(args = nil)
+		def run(args = [])
+			# TODO: Handle return values
 			begin 
 				@block.call(*args)
 			rescue ChannelPoison
-				args.each do |channel|
-					channel.poison if channel.is_a?(Channel) and not channel.poisoned?
+				args.each do |arg|
+					arg.poison if arg.is_a?(Channel) and not arg.poisoned?
 				end
-				puts "#{@id}: Dying from poison..."
+				puts "#{@id}: Dying from poisoning..."
 			end
 		end
 	
@@ -78,6 +79,7 @@ module CSP
 		end
 			
 		def run(method)
+			# TODO: Handle return values
 			case method
 			when :parallel
 				threads = []
@@ -105,7 +107,7 @@ module CSP
 	end
 
 	class Channel
-		# FIXME: Just the one-2-one channel for now
+		# FIXME: Just an any2any channel for now
 		# TODO: Make sure processes get the right end of the channel
 		# TODO: What about guards?
 		
@@ -123,7 +125,7 @@ module CSP
 				@data = data
 				if @pending
 					@pending = false
-					@condition_variable.broadcast
+					@condition_variable.signal
 				else
 					@pending = true
 				end
@@ -142,7 +144,7 @@ module CSP
 					@condition_variable.wait(@mutex)
 				end
 				data = @data # Get it before it changes
-				@condition_variable.broadcast
+				@condition_variable.signal
 				data
 			end
 		end
