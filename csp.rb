@@ -60,7 +60,10 @@ module CSP
 			begin 
 				@block.call(*args)
 			rescue ChannelPoison
-				puts "Dying from poison..."
+				args.each do |channel|
+					channel.poison if channel.is_a?(Channel) and not channel.poisoned?
+				end
+				puts "#{@id}: Dying from poison..."
 			end
 		end
 	
@@ -149,6 +152,10 @@ module CSP
 				@poisoned = true
 				@condition_variable.broadcast
 			end
+		end
+		
+		def poisoned?
+			@poisoned
 		end
 	
 	end
