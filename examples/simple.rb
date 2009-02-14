@@ -13,9 +13,9 @@ writer_process = CSP::Process.new do |output|
 	end
 end
 
-channel = CSP::Channel.new
+channel = CSP::Channel.new :one, :one
 
 CSP::in_parallel do |list|
-	list.add reader_process, channel
-	list.add writer_process, channel
+	list.add reader_process, channel.input
+	list.add writer_process, channel.output
 end

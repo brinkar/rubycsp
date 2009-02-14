@@ -1,3 +1,7 @@
+
+# TODO: Alternatative class
+# TODO: Guards?
+
 require "thread"
 
 module CSP
@@ -60,7 +64,7 @@ module CSP
 			# TODO: Handle return values
 			begin 
 				@block.call(*args)
-			rescue ChannelPoison
+			rescue Channel::Poison
 				args.each do |arg|
 					arg.poison if arg.is_a?(Channel) and not arg.poisoned?
 				end
@@ -107,20 +111,21 @@ module CSP
 	end
 
 	class Channel
-		# FIXME: Just an any2any channel for now
-		# TODO: Make sure processes get the right end of the channel
-		# TODO: What about guards?
 		
-		def initialize
+		def initialize(from = :any, to = :any)
+			@from = amount_to_number from
+			@to = amount_to_number to
 			@mutex = Mutex.new
 			@condition_variable = ConditionVariable.new
 			@data = nil
 			@pending = false
 			@poisoned = false
+			@input_ends = []
+			@output_ends = []
 		end
 	
 		def write(data)
-			raise ChannelPoison if @poisoned
+			raise Poison if @poisoned
 			@mutex.synchronize do
 				@data = data
 				if @pending
@@ -134,7 +139,7 @@ module CSP
 		end
 		
 		def read
-			raise ChannelPoison if @poisoned
+			raise Poison if @poisoned
 			data = nil
 			@mutex.synchronize do
 				if @pending
@@ -159,11 +164,68 @@ module CSP
 		def poisoned?
 			@poisoned
 		end
+		
+		def input
+			if @input_ends.size < @from
+				input_end = InputEnd.new self
+				@input_ends << input_end 
+				return input_end
+			else
+				raise "No more than #{@from} input ends are allowed on this channel."
+			end
+		end
+	
+		def output
+			if @output_ends.size < @to
+				output_end = OutputEnd.new self
+				@output_ends << output_end 
+				return output_end		
+			else
+				raise "No more than #{@to} output ends are allowed on this channel."
+			end
+		end
+		
+		class InputEnd
+		
+			def initialize(channel)
+				@channel = channel
+			end
+
+			def read
+				@channel.read
+			end				
+			
+		end
+		
+		class OutputEnd
+
+			def initialize(channel)
+				@channel = channel
+			end
+
+			def write(data)
+				@channel.write data
+			end
+		
+		end
+		
+		class Poison < Exception; end
+		
+		private
+		
+		def amount_to_number(amount)
+			unless (amount.is_a?(Fixnum) and amount > 0) or [:one, :any].include?(amount)
+				raise "Number of input and output ends must be a positive integer, :one or :any"
+			end
+			case amount
+			when :any
+				amount = 1.0/0
+			when :one
+				amount = 1
+			end
+			return amount
+		end
 	
 	end
-	
-	# TODO: Alternate class (Choice?)
-	
-	class ChannelPoison < Exception; end
 
 end
