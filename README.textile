@@ -1,15 +1,14 @@
 h1. Ruby CSP
 
-*CSP (Communicating Sequential Processes) library for Ruby*
+*CSP:http://en.wikipedia.org/wiki/CSP (Communicating Sequential Processes) library for Ruby*
 
 A VERY infant library introducing CSP-like concurrent programming to the Ruby world.
 
-First of all, be warned that this library still lacks a lot of very basic CSP concepts and is primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the CS department, University of Copenhagen. It currently only works with Ruby 1.9, and is behaving slightly undeterministic in some circumstances. I hope to get this fixed soon, though.
+First of all, be warned that this library still lacks a lot of very basic CSP concepts and is primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the CS department, University of Copenhagen. It currently only works with Ruby 1.9, and has only been tested on 32bit Linux.
 
-Well, enough of what it doesn't do. The library has been influenced by the PyCSP library with some other constructs introduced to make it more Ruby-ish. At this point some basic standard processes has been built and testet. Generally you can check out the syntax and behaviour of the library by looking at the files in the tests/ directory and of course by running them.
+Well, enough of what it doesn't do. The library has been influenced by the PyCSP library with some other constructs introduced to make it more Ruby-ish. At this point some basic standard processes has been built and testet. Generally you can check out the syntax and behaviour of the library by looking at (and running) the files in the examples/ and tests/ directories.
 
-The canonical commstime (standing for... ?) CSP benchmark has been implemented like the one provided with PyCSP, and the results are actually quite cool. On my 2.4 GHz Core2 Duo I get an average channel time of around 20 us (micro-seconds), which surprisingly is about 3 times faster than the equivalent test in PyCSP. 
-
+The canonical Commstime CSP benchmark has been implemented, and the results are actually quite cool. I get an average channel time which (surprisingly) is about 3 times faster than the equivalent test in PyCSP.
 While this library still lacks a lot of features, I wouldn't think that the execution time should be affected too much, so it looks like the Ruby devs have really made some neat stuff with Ruby 1.9 performance, the primary of which is of course introducing native threads, so we can take advantage of all those multi-core CPU's outthere. At some point it might be interesting to implement this library using a mix of Ruby 1.9 fibers and native threads, so we get the lightweight concurrency of fibers distributed in just enough heavyweight native threads to cover the number of cores. 
 
 I have to say though that performance is not really a concern at this point, as I don't think anyone would use Ruby to do any serious heavy calculations. So once again, this project is primarily for learning CSP while taking advantage of the powerfull semantics of Ruby.
