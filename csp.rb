@@ -66,7 +66,7 @@ module CSP
 				@block.call(*args)
 			rescue Channel::Poison
 				args.each do |arg|
-					arg.poison if arg.is_a?(Channel) and not arg.poisoned?
+					arg.poison if (arg.is_a?(Channel) or arg.is_a?(Channel::End)) and not arg.poisoned?
 				end
 				puts "#{@id}: Dying from poisoning..."
 			end
@@ -185,23 +185,31 @@ module CSP
 			end
 		end
 		
-		class InputEnd
-		
+		class End
+			
 			def initialize(channel)
 				@channel = channel
 			end
-
+			
+			def poison
+				@channel.poison
+			end
+			
+			def poisoned?
+				@channel.poisoned?
+			end
+			
+		end
+		
+		class InputEnd < End
+		
 			def read
 				@channel.read
 			end				
 			
 		end
 		
-		class OutputEnd
-
-			def initialize(channel)
-				@channel = channel
-			end
+		class OutputEnd < End
 
 			def write(data)
 				@channel.write data

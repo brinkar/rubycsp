@@ -14,14 +14,14 @@ p2 = CSP::Process.new do |output|
 end
 
 plist = CSP::ProcessList.new
-c2 = CSP::Channel.new
+c2 = CSP::Channel.new :one, :one
 
 plist.add(CSP::Process.new do |printer|
-	c = CSP::Channel.new
+	c = CSP::Channel.new :one, :one
 
 	CSP::in_parallel do |list|
-		list.add p1, c
-		list.add p2, c
+		list.add p1, c.input
+		list.add p2, c.output
 	end
 	
 	printer.write "We say goodbye!"

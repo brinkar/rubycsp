@@ -18,11 +18,11 @@ printer = CSP::Process.new do |message|
 	puts message.read
 end
 
-c = CSP::Channel.new
-c2 = CSP::Channel.new
+c = CSP::Channel.new :one, :one
+c2 = CSP::Channel.new :one, :one
 
 CSP::in_parallel do |list|
-	list.add p1, c
-	list.add p2, c, c2
-	list.add printer, c2
+	list.add p1, c.input
+	list.add p2, c.output, c2.output
+	list.add printer, c2.input
 end

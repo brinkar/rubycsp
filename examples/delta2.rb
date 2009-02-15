@@ -10,11 +10,11 @@ consumer = CSP::Process.new do |output, input1, input2|
 	output.poison
 end
 
-channel1 = CSP::Channel.new
-channel2 = CSP::Channel.new
-channel3 = CSP::Channel.new
+channel1 = CSP::Channel.new :one, :one
+channel2 = CSP::Channel.new :one, :one
+channel3 = CSP::Channel.new :one, :one
 
 CSP::in_parallel do |list|
-	list.add consumer, channel1, channel2, channel3
-	list.add CSP::Process.get(:delta2), channel1, channel2, channel3
+	list.add consumer, channel1.output, channel2.input, channel3.input
+	list.add CSP::Process.get(:delta2), channel1.input, channel2.output, channel3.output
 end

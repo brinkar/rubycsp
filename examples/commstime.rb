@@ -25,18 +25,18 @@ N_iterations.times do |i|
 	puts "Iteration #{i}"
 	puts "------------"
 	
-	a = CSP::Channel.new
-	b = CSP::Channel.new
-	c = CSP::Channel.new
-	d = CSP::Channel.new
+	a = CSP::Channel.new :one, :one
+	b = CSP::Channel.new :one, :one
+	c = CSP::Channel.new :one, :one
+	d = CSP::Channel.new :one, :one
 	
 	puts "Running commstime test"
 	
 	CSP::in_parallel do |list|
-		list.add CSP::Process.get(:prefix), c, a, 0
-		list.add CSP::Process.get(:delta2), a, b, d
-		list.add CSP::Process.get(:successor), b, c
-		list.add consumer, d
+		list.add CSP::Process.get(:prefix), c.input, a.output, 0
+		list.add CSP::Process.get(:delta2), a.input, b.output, d.output
+		list.add CSP::Process.get(:successor), b.input, c.output
+		list.add consumer, d.input
 	end
 end
 
