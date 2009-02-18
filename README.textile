@@ -8,11 +8,11 @@ h2. Introduction
 
 First of all, be warned that this library still lacks some of very basic CSP concepts and is primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the CS department, University of Copenhagen. It currently only works with Ruby 1.9, and has only been tested on 32bit Linux.
 
-Well, enough of what it doesn't do. The library has been influenced by the PyCSP and JCSP libraries with some other constructs introduced to make it more Ruby-ish. You can check out the syntax and behaviour of the library by looking at (and running) the files in the examples/ and tests/ directories. Later on, a more formal tutorial, along with some API-docs, might be constructed.
+Well, enough of what it doesn't do. The library has been influenced by the PyCSP and JCSP libraries with some other constructs introduced to make it more Ruby-ish. You can check out the syntax and behaviour of the library by looking at (and running) the files in the examples/ and tests/ directories. Later on, a more formal tutorial and some API-docs might be created.
 
 h2. Features
 
-Currently implemented featues include:
+*Currently implemented featues include:*
 
 * Processes.
 * Process lists for running processes in parallel or sequentially.
@@ -22,15 +22,16 @@ Currently implemented featues include:
 * Read/write restriction using channel ends.
 * Some simplifying functions for doing common stuff easily.
 
-Planned features:
+*Planned features:*
 
-* Alternative class. Reading from one of many channels depending on availaility of data.
+* Alternative class. Reading from one of many channels depending on availability of data.
 * Transparent network support. Channels are shared on a TCP socket so that any process can run anywhere on the network.
 * Native processes. Creating an easy way to implement your processes in C/++ or Fortran, possibly using the RubyInline gem.
 
 h2. Performance
 
-The canonical Commstime CSP benchmark has been implemented, and the results are actually quite cool. I get an average channel time which (surprisingly) is about 3 times faster than the equivalent test in PyCSP.
-While this library still lacks a lot of features, I wouldn't think that the execution time should be affected too much, so it looks like the Ruby devs have really made some neat stuff with Ruby 1.9 performance, the primary of which is of course introducing native threads, so we can take advantage of all those multi-core CPU's outthere. At some point it might be interesting to implement this library using a mix of Ruby 1.9 fibers and native threads, so we get the lightweight concurrency of fibers distributed in just enough heavyweight native threads to cover the number of cores. 
+The canonical Commstime CSP benchmark has been implemented, and the results are actually quite good. I get an average channel time about 3 times faster than the equivalent test in PyCSP.
+While this library still lacks a lot of features, I wouldn't think that the execution time should be affected too much, so it looks like the Ruby devs have really made some neat stuff with Ruby 1.9 performance, the primary of which is of course introducing native threads, so we can take advantage of multi-core CPU's. At some point it might be interesting to implement this library using a mix of Ruby 1.9 fibers and native threads, so we get the lightweight concurrency of fibers distributed in just enough heavyweight native threads to cover the number of cores. 
 
-I have to say though that performance is not really a concern at this point, as I don't think anyone would use Ruby to do any serious heavy calculations. So once again, this project is primarily for learning CSP while taking advantage of the powerfull semantics of Ruby.
+I have to say though that performance is not really a concern at this point, as I don't think anyone would use Ruby to do any serious high performance computing. But it might still be cool to be able to use Ruby to prototype processes and implement the communication logic, and then write the time consuming processes in C/++ or Fortran.
+
