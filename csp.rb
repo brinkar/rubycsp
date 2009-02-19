@@ -7,23 +7,27 @@ require "thread"
 module CSP
 
 	def CSP::in_parallel(&block)
+		retvals = nil
 		if block_given?
 			p = ProcessList.new
 			yield p
-			p.run :parallel
+			retvals = p.run :parallel
 		else
 			raise "No block given to 'in_parallel'"
 		end
+		return retvals
 	end
 	
 	def CSP::in_sequence(&block)
+		retvals = nil
 		if block_given?
 			p = ProcessList.new
 			yield p
-			p.run :sequential
+			retvals = p.run :sequential
 		else
 			raise "No block given to 'in_sequence'"
 		end
+		return retvals
 	end
 
 	class Process
