@@ -1,6 +1,6 @@
 h1. Ruby CSP
 
-*"CSP (Communicating Sequential Processes)":http://en.wikipedia.org/wiki/CSP library for Ruby*
+*"CSP (Communicating Sequential Processes)":http://en.wikipedia.org/wiki/Communicating_sequential_processes library for Ruby*
 
 A young library introducing CSP-like concurrent programming to the Ruby world.
 
