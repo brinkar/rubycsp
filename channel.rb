@@ -29,6 +29,7 @@ module CSP
 				end
 				@condition_variable.wait(@mutex)
 			end
+			return data
 		end
 		
 		def read
@@ -98,7 +99,7 @@ module CSP
 		
 			def read
 				@channel.read
-			end				
+			end
 			
 		end
 		
@@ -106,6 +107,10 @@ module CSP
 
 			def write(data)
 				@channel.write data
+			end
+			
+			def <<(data)
+				write(data)
 			end
 		
 		end
