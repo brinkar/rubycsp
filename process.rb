@@ -68,7 +68,10 @@ module CSP
 				args.each do |arg|
 					arg.poison if (arg.is_a?(Channel) or arg.is_a?(Channel::End)) and not arg.poisoned?
 				end
-				puts "#{@id}: Dying from poisoning..."
+				#puts "#{@id}: Dying from poisoning..."
+			rescue
+				puts $!.message
+				puts $!.backtrace
 			end
 			return retval
 		end
