@@ -3,37 +3,53 @@ require "csp"
 
 class ChannelTestCase < Test::Unit::TestCase
 
+	def test_end_type
+		c = CSP::Channel.new
+
+		i = c.input
+		assert i.is_a?(CSP::Channel::InputEnd)
+		puts i.type
+		assert i.type == :input
+		
+		o = c.output
+		assert o.is_a?(CSP::Channel::OutputEnd)
+		puts o.type
+		assert o.type == :output
+	end
+	
+
 	def test_read_write
 	
-		writer = CSP::Process.new do |out|
-			out.write "Hello" 
+		writer = CSP::Process.new do |c|
+			c.write "Hello" 
 		end
 		
-		reader = CSP::Process.new do |input|
-			input.read
+		reader = CSP::Process.new do |c|
+			c.read
 		end
 		
 		c = CSP::Channel.new
-		res = CSP::in_parallel do |l|
-			l.add writer, c.output
-			l.add reader, c.input
+
+		res = CSP::in_parallel do |map|
+			map.add writer, c.input
+			map.add reader, c.output
 		end
 		
 		assert res == ["Hello", "Hello"]
 
-		writer = CSP::Process.new do |out|
-			out << "Hello" 
+		writer = CSP::Process.new do |c|
+			c << "Hello" 
 		end
 		
-		res = CSP::in_parallel do |l|
-			l.add writer, c.output
-			l.add reader, c.input
+		res = CSP::in_parallel do |map|
+			map.add writer, c.input
+			map.add reader, c.output
 		end
 		
 		assert res == ["Hello", "Hello"]
 	
 	end
-
+=begin
 	def test_amount
 		# Zero is not a possibility
 		assert_raise RuntimeError do
@@ -59,6 +75,6 @@ class ChannelTestCase < Test::Unit::TestCase
 			l.add(CSP::Process.new {|c| }, c.input)
 		end
 	end
-
+=end
 end
 

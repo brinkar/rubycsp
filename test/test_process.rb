@@ -3,29 +3,45 @@ require "csp"
 
 class ChannelTestCase < Test::Unit::TestCase
 
-	def test_return_values
-		p1 = CSP::Process.new { "Hello" }
-		assert p1.run == "Hello"
-		
-		p2 = CSP::Process.new { "World" }
-		plist = CSP::ProcessList.new
-		plist.add p1
-		plist.add p2
-		assert plist.run == ["Hello", "World"]
-		assert plist.run :parallel == ["Hello", "World"]
-		assert plist.run :sequential == ["Hello", "World"]
-		
-		retvals = CSP::in_parallel do |list|
-			list.add p1
-			list.add p2
+	def test_setup_and_return
+	
+		p1 = CSP::Process.new do |n|
+			n + 1
 		end
-		assert retvals == ["Hello", "World"]
 		
-		retvals = CSP::in_sequence do |list|
-			list.add p1
-			list.add p2
+		assert p1.setup(10) == 11
+		
+		assert_raise FiberError do
+			p1.run
 		end
-		assert retvals == ["Hello", "World"]
+	
+		p2 = CSP::Process.new do
+			"Hello"
+		end
+
+		assert_raise RuntimeError do
+			p2.run
+		end
+		
+		assert p2.setup == "Hello"
+
+		assert_raise FiberError do
+			p2.run
+		end
+		
+	end
+	
+	def test_ends
+		c = CSP::Channel.new
+		p1 = CSP::Process.new do |c|
+			"Hello"
+		end
+		assert p1.setup(c.input) == "Hello"
+		assert p1.ends.size == 1
+		assert p1.ends(:input).size == 1
+		assert p1.ends(:output).size == 0
+		
+		assert p1.ends.first.process == p1
 	end
 
 end
