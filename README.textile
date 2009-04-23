@@ -6,16 +6,16 @@ A young library introducing CSP-like concurrent programming to the Ruby world.
 
 h2. Introduction
 
-First of all, be warned that this library still lacks some of very basic CSP concepts and is primarily used as a platform for learning CSP while taking the Extreme Multiprogramming course at the CS department, University of Copenhagen. It currently only works with Ruby 1.9, and has only been tested on 32bit Linux.
+First of all, be warned that this library still lacks some of very basic CSP concepts. It only works with Ruby 1.9, and has only been tested on Linux.
 
-The library has been influenced by the other common CSP implementations including Python (PyCSP), Java (JCSP), C++ CSP and Occam with some other constructs introduced to make it more Ruby-ish. You can check out the syntax and behaviour of the library by looking at the files in the examples/ and tests/ directories. Later on, a more formal tutorial and some API-docs might be created.
+The library has been influenced by other CSP implementations including PyCSP (for Python), JCSP (for Java), C++ CSP and Occam with some other concepts introduced to make it more Ruby-ish wherever possible. You can check out the syntax and behaviour of the library by looking at the files in the examples/ and test/ directories. Later on, a more formal tutorial and some API-docs might be created.
 
 h2. Features
 
 *Currently implemented featues include:*
 
-* Processes.
-* Process lists for running processes in parallel or sequentially.
+* Processes. Implemented using Ruby 1.9 fibers.
+* Process maps for running processes in parallel.
 * Process labelling for easy reusing of processes.
 * Channels. Anything (one, any, any natural number) to anything.
 * Poisoning of channels.
@@ -24,14 +24,11 @@ h2. Features
 
 *Planned features:*
 
-* Alternative class. Reading from one of many channels depending on availability of data.
+* Alternative class. Reading/writing from/to one of more channels depending on the state of the system.
+* OS processes. Distribute CSP processes (fibers) on a number of Ruby processes, making it possible to take advantage of multiple CPU cores.
 * Transparent network support. Channels are shared on a TCP socket so that any process can run anywhere on the network.
 * Native processes. Creating an easy way to implement your processes in C/++ or Fortran, possibly using the RubyInline gem.
-
-h2. Performance
-
-The canonical Commstime CSP benchmark has been implemented, and the results are actually quite good. I get an average channel time about 3 times faster than the equivalent test in PyCSP.
-While this library still lacks a lot of features, I wouldn't think that the execution time should be affected too much, so it looks like the Ruby devs have really made some neat stuff with Ruby 1.9 performance, the primary of which is of course introducing native threads, so we can take advantage of multi-core CPU's. At some point it might be interesting to implement this library using a mix of Ruby 1.9 fibers and native threads, so we get the lightweight concurrency of fibers distributed in just enough heavyweight native threads to cover the number of cores. 
-
-I have to say though, that performance is not really a concern at this point, as I don't think anyone would use Ruby to do any serious high performance computing. But it might still be cool to be able to use Ruby to prototype processes and implement the communication logic, and then write the time consuming processes in C/++ or Fortran.
-
+* Visualization and inspection. Automatic graph creation for inspecting your CSP network.
+* Logging. Something like CSP traces could be implemented for generic logging and inspection of the state of a system.
+* Suspending/resuming processes and networks. If it's actually usable for anything.
+* Mobility. Look into pi-calculus and see if some of the concepts of process and channel mobility could be implemented.
