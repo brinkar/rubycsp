@@ -3,45 +3,91 @@ require "csp"
 
 class ChannelTestCase < Test::Unit::TestCase
 
-	def test_setup_and_return
+	def test_create_and_run
 	
-		p1 = CSP::Process.new do |n|
+		pd = CSP::Process.define :test do |n|
 			n + 1
-		end
-		
-		assert p1.setup(10) == 11
-		
-		assert_raise FiberError do
-			p1.run
-		end
-	
-		p2 = CSP::Process.new do
-			"Hello"
 		end
 
 		assert_raise RuntimeError do
-			p2.run
+			CSP::Process.define :test do |n|
+				n + 1
+			end
 		end
 		
-		assert p2.setup == "Hello"
-
-		assert_raise FiberError do
+		p1 = CSP::Process.new pd, 10
+		assert p1.run == 11
+		
+		assert_raise CSP::Process::Finished do
+			p1.run
+		end
+		
+		p2 = CSP::Process.new :test, 20
+		
+		assert p2.run == 21
+		
+		assert_raise CSP::Process::Finished do
 			p2.run
 		end
 		
 	end
 	
+	def test_remove_and_clear
+		
+		CSP::Process.clear!
+				
+		CSP::Process.define :test do |n|
+			n + 1
+		end
+		
+		CSP::Process.clear!
+				
+		assert_nothing_thrown do 
+			CSP::Process.define :test do |n|
+				n + 1
+			end
+		end
+		
+		CSP::Process.remove! :test
+
+		assert_nothing_thrown do 
+			CSP::Process.define :test do |n|
+				n + 1
+			end
+		end
+
+	end
+	
+	def test_list
+		
+		CSP::Process.clear!
+		
+		CSP::Process.define :test do |n|
+			n + 1
+		end
+		
+		assert CSP::Process.list.size == 1
+		assert CSP::Process.definitions.size == 1
+		
+		assert CSP::Process.list.first.name == :test
+		
+	end
+	
 	def test_ends
+	
 		c = CSP::Channel.new
-		p1 = CSP::Process.new do |c|
+		pd = CSP::Process.define do |c|
 			"Hello"
 		end
-		assert p1.setup(c.input) == "Hello"
-		assert p1.ends.size == 1
-		assert p1.ends(:input).size == 1
-		assert p1.ends(:output).size == 0
+		p = CSP::Process.new pd, c.input
 		
-		assert p1.ends.first.process == p1
+		assert p.run == "Hello"
+		assert p.ends.size == 1
+		assert p.ends(:input).size == 1
+		assert p.ends(:output).size == 0
+		
+		assert p.ends.first.process == p
+	
 	end
 
 end

@@ -8,23 +8,23 @@ class ChannelTestCase < Test::Unit::TestCase
 
 		i = c.input
 		assert i.is_a?(CSP::Channel::InputEnd)
-		puts i.type
+
 		assert i.type == :input
 		
 		o = c.output
 		assert o.is_a?(CSP::Channel::OutputEnd)
-		puts o.type
+
 		assert o.type == :output
 	end
 	
 
 	def test_read_write
 	
-		writer = CSP::Process.new do |c|
+		writer = CSP::Process.define do |c|
 			c.write "Hello" 
 		end
 		
-		reader = CSP::Process.new do |c|
+		reader = CSP::Process.define do |c|
 			c.read
 		end
 		
@@ -37,7 +37,7 @@ class ChannelTestCase < Test::Unit::TestCase
 		
 		assert res == ["Hello", "Hello"]
 
-		writer = CSP::Process.new do |c|
+		writer = CSP::Process.define do |c|
 			c << "Hello" 
 		end
 		
@@ -49,32 +49,36 @@ class ChannelTestCase < Test::Unit::TestCase
 		assert res == ["Hello", "Hello"]
 	
 	end
-=begin
+
 	def test_amount
+	
+		pd = CSP::Process.define do
+		end
+		
 		# Zero is not a possibility
 		assert_raise RuntimeError do
 			CSP::Channel.new 0, 1
 		end
 		
 		c = CSP::Channel.new :one, :one
-		l = CSP::ProcessList.new
-		l.add(CSP::Process.new {|c| }, c.input)
+
+		CSP::Process.new pd, c.input
 		
 		# We can not give this channel to more than one
 		assert_raise RuntimeError do
-			l.add(CSP::Process.new {|c| }, c.input)
+			CSP::Process.new pd, c.input
 		end
 		
 		c = CSP::Channel.new 2, :one
-		l = CSP::ProcessList.new
-		l.add(CSP::Process.new {|c| }, c.input)
-		l.add(CSP::Process.new {|c| }, c.input)
+
+		CSP::Process.new pd, c.input
+		CSP::Process.new pd, c.input
 				
 		# We can not give this channel to more than two
 		assert_raise RuntimeError do
-			l.add(CSP::Process.new {|c| }, c.input)
+			CSP::Process.new pd, c.input
 		end
 	end
-=end
+
 end
 

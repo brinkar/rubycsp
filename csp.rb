@@ -1,47 +1,103 @@
 module CSP
 
-	class Process < Fiber
+	class Process
+			
+		class Definition
 
-		private :resume
-		attr_accessor :name
-		
-		def initialize(name = "Noname process", &body)
-			# TODO: Check for valid args
-			@name = name
-			super(&body)
-			@setup = false
-			@ends = []
+			attr_reader :name
+			attr_reader :block
+
+			def initialize(name, &block)
+				@name = name
+				@block = block
+			end
+
 		end
 		
-		def setup(*args)
-			args.each do |arg|
-				arg.process = self if arg.is_a?(Channel::End)
-				@ends << arg
+		class Finished < Exception
+		end
+	
+		class << self
+		
+			attr_reader :definitions
+			
+			def define(name = nil, &block)
+				if not name.nil? and @definitions.any? { |pd| pd.name == name }
+					raise "A process named '#{name}' is already defined."
+				end
+				pd = Definition.new name, &block
+				@definitions << pd
+				pd
 			end
-			val = resume *args
-			@setup = true
-			val
+			
+			def get(name)
+				@definitions.each do |pd|
+					return pd if pd.name == name
+				end
+				return nil
+			end
+			
+			def list
+				@definitions
+			end
+			
+			def clear!
+				@definitions = []
+			end
+			
+			def remove!(name)
+				@definitions.each do |d|
+					@definitions.delete(d) if d.name == name
+				end
+			end
+			
+		end
+
+		@definitions = []
+		
+		attr_reader :value
+				
+		def initialize(definition, *args)
+			if not definition.is_a?(Definition)
+				definition = self.class.get definition
+				raise "No such process defined." if definition.nil?
+			end
+			@definition = definition
+			@fiber = Fiber.new &definition.block
+			@value = nil
+			@args = args
+			@ends = []
+			@args.each do |arg|
+				if arg.is_a?(Channel::End)
+					arg.process = self
+					@ends << arg
+				end
+			end
 		end
 		
 		def run
-			raise "Process must be setup." if not @setup
 			begin
-				res = resume
+				res = @fiber.resume *@args
 			rescue Channel::Poison
-				puts "'#{@name}' dying from poisoning!"
+				puts "'#{@definition.name}' dying from poisoning!"
+				@ends.each do |e|
+					e.poison
+				end
+			rescue FiberError
+				raise Finished
 			end
+			@value = res
 			return res
 		end
 		
 		def ends(type = nil)
-			raise "Process must be setup" if not @setup
 			if type.nil?
 				return @ends
 			else
 				return @ends.select { |e| e.type == type }
 			end
 		end
-		
+
 	end
 	
 	def CSP::in_parallel(&block)
@@ -62,34 +118,32 @@ module CSP
 			@processes = []
 		end
 		
-		def add(process, *args)
-			@processes << {:process => process, :args => args}
+		def add(definition, *args)
+			p = CSP::Process.new definition, *args
+			@processes << p
 		end
 		
 		def <<(process, *args)
-			add(process, &args)
+			add(process, *args)
 		end
 		
 		def run
-			@processes.each do |p|
-				p[:value] = p[:process].setup *p[:args]
-			end
 
-			dead = 0
-			while dead < @processes.size
+			finished = 0
+			while finished < @processes.size
 				begin
 					@processes.each do |p|
-						p[:value] = p[:process].run
+						p.run
 					end
-				rescue FiberError
-					dead += 1
+				rescue CSP::Process::Finished
+					finished += 1
 				end					
 			end
 
-			puts "All processes finished."
+			puts "#{finished} processes finished."
 
 			values = @processes.map do |p|
-				p[:value]
+				p.value
 			end
 			values
 		end

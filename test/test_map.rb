@@ -5,14 +5,16 @@ class MapTestCase < Test::Unit::TestCase
 
 	def test_run
 
-		p1 = CSP::Process.new :reader do |c| 
+		CSP::Process.clear!
+
+		CSP::Process.define :reader do |c| 
 			10.times do
 				c.read
 			end
 			"hello"
 		end
 
-		p2 = CSP::Process.new :writer do |c|
+		CSP::Process.define :writer do |c|
 			10.times do |i|
 				c.write "Hello #{i}"
 			end
@@ -24,8 +26,8 @@ class MapTestCase < Test::Unit::TestCase
 
 		map = CSP::Map.new
 
-		map.add p1, c.output
-		map.add p2, c.input
+		map.add :reader, c.output
+		map.add :writer, c.input
 
 		assert map.run == ["hello", "csp"]
 
@@ -33,14 +35,16 @@ class MapTestCase < Test::Unit::TestCase
 	
 	def test_in_parallel
 	
-		p1 = CSP::Process.new :reader do |c| 
+		CSP::Process.clear!
+	
+		CSP::Process.define :reader do |c| 
 			10.times do
 				c.read
 			end
 			"hello"
 		end
 
-		p2 = CSP::Process.new :writer do |c|
+		CSP::Process.define :writer do |c|
 			10.times do |i|
 				c.write "Hello #{i}"
 			end
@@ -51,8 +55,8 @@ class MapTestCase < Test::Unit::TestCase
 		c = CSP::Channel.new
 
 		values = CSP::in_parallel do |map|
-			map.add p1, c.output
-			map.add p2, c.input
+			map.add :reader, c.output
+			map.add :writer, c.input
 		end
 		assert values == ["hello", "csp"]
 		
