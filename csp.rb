@@ -22,11 +22,14 @@ module CSP
 			attr_reader :definitions
 			
 			def define(name = nil, &block)
-				if not name.nil? and @definitions.any? { |pd| pd.name == name }
-					raise "A process named '#{name}' is already defined."
-				end
 				pd = Definition.new name, &block
-				@definitions << pd
+				if not name.nil?
+					if @definitions.any? { |pd| pd.name == name }
+						raise "A process named '#{name}' is already defined."
+					else
+						@definitions << pd	
+					end
+				end
 				pd
 			end
 			
