@@ -16,7 +16,7 @@ class MapTestCase < Test::Unit::TestCase
 
 		CSP::Process.define :writer do |c|
 			10.times do |i|
-				c.write "Hello #{i}"
+				c.write("Hello #{i}")
 			end
 			c.poison
 			"csp"

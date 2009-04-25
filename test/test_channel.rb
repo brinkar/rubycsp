@@ -21,7 +21,7 @@ class ChannelTestCase < Test::Unit::TestCase
 	def test_read_write
 	
 		writer = CSP::Process.define do |c|
-			c.write "Hello" 
+			c.write("Hello")
 		end
 		
 		reader = CSP::Process.define do |c|
@@ -34,7 +34,7 @@ class ChannelTestCase < Test::Unit::TestCase
 			map.add writer, c.input
 			map.add reader, c.output
 		end
-		
+
 		assert res == ["Hello", "Hello"]
 
 		writer = CSP::Process.define do |c|
@@ -78,6 +78,14 @@ class ChannelTestCase < Test::Unit::TestCase
 		assert_raise RuntimeError do
 			CSP::Process.new pd, c.input
 		end
+	end
+	
+	def test_filter
+	
+	end
+
+	def test_buffer
+	
 	end
 
 end

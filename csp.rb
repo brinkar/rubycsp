@@ -1,3 +1,5 @@
+require "fiber"
+
 module CSP
 
 	class Process
@@ -59,6 +61,8 @@ module CSP
 		@definitions = []
 		
 		attr_reader :value
+		attr_reader :fiber
+		attr_accessor :pending
 				
 		def initialize(definition, *args)
 			if not definition.is_a?(Definition)
@@ -70,6 +74,7 @@ module CSP
 			@value = nil
 			@args = args
 			@ends = []
+			@pending = false
 			@args.each do |arg|
 				if arg.is_a?(Channel::End)
 					arg.process = self
@@ -162,24 +167,41 @@ module CSP
 			@data = []
 			@input_ends = []
 			@output_ends = []
+			@read_queue = []
+			@write_queue = []
 			@poisoned = false
 		end
 	
-		def write(obj)
-			raise Poison if @poisoned
-			while @data.size == @buffer
-				Fiber.yield
-			end
+		def write(input_end, obj)
+			# TODO: Check if input_end is valid and if buffer is full
+			raise Poison if poisoned?
+			p = input_end.process
+			@write_queue << p
 			@data << obj
-			return obj
+			if @read_queue.empty?
+				Fiber.yield while @read_queue.empty?
+				@read_queue.shift.fiber.transfer
+				return obj
+			else
+				@read_queue.shift.fiber.transfer
+				return obj
+			end
 		end
 		
-		def read
-			raise Poison if @poisoned
-			while @data.empty?
-				Fiber.yield
+		def read(output_end)
+			raise Poison if poisoned?
+			p = output_end.process
+			@read_queue << p
+			if @write_queue.empty?
+				Fiber.yield while @write_queue.empty?
+				data = @data.shift
+				@write_queue.shift.fiber.transfer
+				return data
+			else
+				data = @data.shift
+				@write_queue.shift.fiber.transfer
+				return data
 			end
-			@data.shift	
 		end
 		
 		def poison
@@ -240,7 +262,15 @@ module CSP
 		class OutputEnd < End
 		
 			def read
-				@channel.read
+				@channel.read self
+			end
+			
+			def readable?
+				@channel.readable?
+			end
+			
+			def active?
+				@active
 			end
 			
 		end
@@ -248,11 +278,16 @@ module CSP
 		class InputEnd < End
 
 			def write(data)
-				@channel.write data
+				@channel.write self, data
+				data
 			end
 			
 			def <<(data)
 				write(data)
+			end
+			
+			def writable?
+				@channel.writable?
 			end
 		
 		end
@@ -273,6 +308,122 @@ module CSP
 				amount = 1
 			end
 			return amount
+		end
+	
+	end
+	
+	class Alternation
+	
+		class List
+		
+			attr_reader :guards
+		
+			def initialize
+				@guards = []	
+			end
+		
+			def write(input_end, val, &block)
+				guard = InputGuard.new input_end, val, &block 
+				add guard
+			end
+			
+			def read(output_end, &block)
+				guard = OutputGuard.new output_end, &block 
+				add guard
+			end
+			
+			def add(guard)
+				raise(ArgumentError, "Argument must be an Alternation::Guard") unless guard.is_a?(Guard)
+				@guards << guard
+			end
+		
+		end
+		
+		class Guard
+		
+			def initialize(&block)
+				@block = block
+			end
+
+			def open?
+				raise "Must be implemented!"
+			end
+			
+			def closed?
+				not open?
+			end
+			
+			def execute
+				result = methods.include?(:on_execute) ?  on_execute : nil
+				@block.call self, result if @block
+				return result
+			end
+			
+		end
+		
+		class InputGuard < Guard
+		
+			def initialize(input_end, val, &block)
+				@input_end = input_end
+				@val = val
+				super(&block)
+			end
+			
+			def open?
+				@input_end.writable?
+			end
+			
+			def on_execute
+				@input_end.write @val
+				@val
+			end
+		
+		end
+		
+		class OutputGuard < Guard
+			
+			def initialize(output_end, &block)
+				@output_end = output_end
+				super(&block)
+			end
+			
+			def open?
+				@output_end.readable?
+			end
+			
+			def on_execute
+				@output_end.read
+			end
+		
+		end
+		
+		def initialize(&block)
+			@block = block
+			@list = List.new
+			block.call @list
+		end
+		
+		def execute
+			guard = choose
+			guard.execute
+		end
+		
+		def select
+			guard = choose
+			guard
+		end
+	
+		private	
+		
+		def choose
+			while true
+				open_guards = @list.guards.select { |guard| guard.open? }
+				if open_guards.empty?
+					Fiber.yield
+				else
+					return open_guards.first
+				end
+			end
 		end
 	
 	end
