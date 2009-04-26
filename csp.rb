@@ -160,7 +160,7 @@ module CSP
 	
 	class Channel
 		
-		def initialize(from = :any, to = :any, buffer = 1)
+		def initialize(from = :any, to = :any, buffer = 0)
 			@from = amount_to_number from
 			@to = amount_to_number to
 			@buffer = buffer
@@ -173,35 +173,41 @@ module CSP
 		end
 	
 		def write(input_end, obj)
-			# TODO: Check if input_end is valid and if buffer is full
 			raise Poison if poisoned?
-			p = input_end.process
-			@write_queue << p
+			raise ArgumentError, "Invalid input end." unless @input_ends.include?(input_end)
 			@data << obj
-			if @read_queue.empty?
-				Fiber.yield while @read_queue.empty?
-				@read_queue.shift.fiber.transfer
-				return obj
-			else
-				@read_queue.shift.fiber.transfer
-				return obj
+			if @data.size > @buffer
+				p = input_end.process
+				@write_queue << p
+				if @read_queue.empty?
+					Fiber.yield while @read_queue.empty?
+					@read_queue.shift.fiber.transfer								
+				else
+					@read_queue.shift.fiber.transfer
+				end
 			end
+			return obj
 		end
 		
 		def read(output_end)
 			raise Poison if poisoned?
-			p = output_end.process
-			@read_queue << p
-			if @write_queue.empty?
-				Fiber.yield while @write_queue.empty?
+			raise ArgumentError, "Invalid output end." unless @output_ends.include?(output_end)
+			d = @data.size - @write_queue.size
+			if d > 0 and d <= @buffer
 				data = @data.shift
-				@write_queue.shift.fiber.transfer
-				return data
 			else
-				data = @data.shift
-				@write_queue.shift.fiber.transfer
-				return data
+				p = output_end.process
+				@read_queue << p
+				if @write_queue.empty?
+					Fiber.yield while @write_queue.empty?
+					data = @data.shift
+					@write_queue.shift.fiber.transfer
+				else
+					data = @data.shift
+					@write_queue.shift.fiber.transfer
+				end
 			end
+			return data
 		end
 		
 		def poison

@@ -85,8 +85,31 @@ class ChannelTestCase < Test::Unit::TestCase
 	end
 
 	def test_buffer
-	
-	end
+		writer = CSP::Process.define do |c|
+			3.times { c.write("Test") }
+			"Hello"
+		end
+		
+		reader = CSP::Process.define do |c|
+			3.times { c.read }
+			"CSP"
+		end
+		
+		c = CSP::Channel.new	
+		wp = CSP::Process.new writer, c.input
+		rp = CSP::Process.new reader, c.output
 
+		assert wp.run == nil
+		assert rp.run == nil
+		
+		c = CSP::Channel.new nil, nil, 3
+		wp = CSP::Process.new writer, c.input
+		rp = CSP::Process.new reader, c.output
+
+		assert wp.run == "Hello"
+		assert rp.run == "CSP"
+		
+	end
+	
 end
 
