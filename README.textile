@@ -1,8 +1,6 @@
 h1. Ruby CSP
 
-* "Communicating Sequential Processes":http://en.wikipedia.org/wiki/Communicating_sequential_processes library for Ruby*
-
-A small library introducing CSP-like concurrent programming to the Ruby world.
+*"Communicating Sequential Processes":http://en.wikipedia.org/wiki/Communicating_sequential_processes library for Ruby.*
 
 h2. Introduction
 
@@ -16,7 +14,7 @@ h2. Features
 
 *Currently implemented featues include:*
 
-* Processes. Implemented using Ruby 1.9 fibers.
+* Processes.
 * Process maps for running processes in parallel.
 * Process labelling for easy reusing of processes.
 * Channels. Can be shared and buffered.
@@ -35,3 +33,5 @@ h2. Features
 * Logging. Something like CSP traces could be implemented for generic logging and inspection of the state of a system.
 * Suspending/resuming processes and networks. If it's actually usable for anything.
 * Mobility. Look into pi-calculus and see if some of the concepts of process and channel mobility could be implemented.
+* API docs
+* Gem
