@@ -1,14 +1,16 @@
 h1. Ruby CSP
 
-*"CSP (Communicating Sequential Processes)":http://en.wikipedia.org/wiki/Communicating_sequential_processes library for Ruby*
+* "Communicating Sequential Processes":http://en.wikipedia.org/wiki/Communicating_sequential_processes library for Ruby*
 
-A young library introducing CSP-like concurrent programming to the Ruby world.
+A small library introducing CSP-like concurrent programming to the Ruby world.
 
 h2. Introduction
 
-First of all, be warned that this library still lacks some of very basic CSP concepts. It only works with Ruby 1.9, and has only been tested on Linux.
+CSP is a formal language for defining concurrent systems that can be verified mathematically, making it possible to prove the correctness of your concurrent system, ie. that there are no deadlocks, race conditions etc. This library is an implementation of CSP in Ruby 1.9 that introduces a new and better way of developing concurrent programs in Ruby, something that can otherwise be very hard.
 
-The library has been influenced by other CSP implementations including PyCSP (for Python), JCSP (for Java), C++ CSP and Occam with some other concepts introduced to make it more Ruby-ish wherever possible. You can check out the syntax and behaviour of the library by looking at the files in the examples/ and test/ directories. Later on, a more formal tutorial and some API-docs might be created.
+The library has been influenced by other CSP implementations including PyCSP (for Python), JCSP (for Java), C++ CSP and Occam, with some other concepts introduced to make it more Ruby-ish wherever possible. You can check out the syntax and behaviour of the library by looking at the files in the examples/ and test/ directories. Later on, a more formal tutorial and some API-docs might be created.
+
+Please note that this library only works with Ruby 1.9, and has only been tested on Linux.
 
 h2. Features
 
@@ -17,14 +19,15 @@ h2. Features
 * Processes. Implemented using Ruby 1.9 fibers.
 * Process maps for running processes in parallel.
 * Process labelling for easy reusing of processes.
-* Channels. Anything (one, any, any natural number) to anything.
+* Channels. Can be shared and buffered.
 * Poisoning of channels.
 * Read/write restriction using channel ends.
 * Some simplifying functions for doing common stuff easily.
+* Alternation with input, output, timeout and skip guards.
+* Test and example suite.
 
 *Planned features:*
 
-* Alternative class. Reading/writing from/to one of more channels depending on the state of the system.
 * OS processes. Distribute CSP processes (fibers) on a number of Ruby processes, making it possible to take advantage of multiple CPU cores.
 * Transparent network support. Channels are shared on a TCP socket so that any process can run anywhere on the network.
 * Native processes. Creating an easy way to implement your processes in C/++ or Fortran, possibly using the RubyInline gem.
