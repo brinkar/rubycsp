@@ -130,11 +130,39 @@ class AlternationTestCase < Test::Unit::TestCase
 	end
 	
 	def test_skip
-		# TODO
+		test = CSP::Process.define do |cin|
+			CSP::Alternation.new do |list|
+				list.read cin
+				list.skip
+			end.execute
+			"Hello"
+		end
+		
+		c = CSP::Channel.new
+		
+		res = CSP::in_parallel do |map|
+			map.add test, c.output
+		end
+		
+		assert res.first == "Hello"
 	end
 	
 	def test_timeout
-		# TODO
+		test = CSP::Process.define do |cin|
+			CSP::Alternation.new do |list|
+				list.read cin
+				list.timeout 1
+			end.execute
+		end
+		
+		c = CSP::Channel.new
+		
+		res = CSP::in_parallel do |map|
+			map.add test, c.output
+		end
+		
+		assert res.first > 1
+		
 	end
 
 end

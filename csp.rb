@@ -346,6 +346,16 @@ module CSP
 				add guard
 			end
 			
+			def timeout(time, &block)
+				guard = TimeoutGuard.new time, &block 
+				add guard
+			end
+			
+			def skip(&block)
+				guard = SkipGuard.new &block 
+				add guard
+			end
+			
 			def add(guard)
 				raise(ArgumentError, "Argument must be an Alternation::Guard") unless guard.is_a?(Guard)
 				@guards << guard
@@ -407,6 +417,32 @@ module CSP
 			
 			def on_execute
 				@output_end.read
+			end
+		
+		end
+		
+		class TimeoutGuard < Guard
+		
+			def initialize(time, &block)
+				@start_time = Time.now
+				@time = time
+				super(&block)
+			end
+			
+			def open?
+				(Time.now - @start_time) > @time
+			end
+			
+			def on_execute
+				Time.now - @start_time
+			end
+		
+		end
+		
+		class SkipGuard < Guard
+		
+			def open?
+				true
 			end
 		
 		end
