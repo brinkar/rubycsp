@@ -15,7 +15,7 @@ consumer = CSP::Process.define do |cin|
 	dt = t2-t1
 	t_chan = dt / (4*N)
 	times << t_chan
-	puts "Time: #{dt} s", "Time pr. channel: #{(t_chan*1e6).round(3)} mus (#{t_chan} s)"
+	puts "Time: #{dt} s", "Time pr. channel: #{(t_chan*1e6).round(3)} us (#{t_chan} s)"
 	puts "Consumer done, poisoning channel"
 	cin.poison
 end
@@ -41,5 +41,5 @@ N_iterations.times do |i|
 end
 
 average = (times.inject(0){|sum,e|sum+e}/N_iterations*1e6).round(3)
-puts "\n-----------", "Average channel time: #{average} mus\n"
+puts "\n-----------", "Average channel time: #{average} us\n"
 

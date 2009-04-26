@@ -210,6 +210,14 @@ module CSP
 			return data
 		end
 		
+		def writable?
+			@data.size < @buffer or not @read_queue.empty?
+		end
+		
+		def readable?
+			@data.size > @write_queue.size or not @write_queue.empty?
+		end
+		
 		def poison
 			@poisoned = true
 		end

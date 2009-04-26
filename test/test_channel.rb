@@ -81,7 +81,7 @@ class ChannelTestCase < Test::Unit::TestCase
 	end
 	
 	def test_filter
-	
+		# TODO
 	end
 
 	def test_buffer
