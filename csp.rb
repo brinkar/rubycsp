@@ -1,4 +1,4 @@
-require "process"
-require "map"
-require "channel"
-require "alternation"
+require "lib/process"
+require "lib/map"
+require "lib/channel"
+require "lib/alternation"
