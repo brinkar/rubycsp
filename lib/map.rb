@@ -1,4 +1,4 @@
-require "monitor"
+require "thread"
 
 module CSP
 	
@@ -6,9 +6,7 @@ module CSP
 		
 		def initialize
 			@processes = []
-			@process_queue = []
-			@process_queue.extend MonitorMixin
-			@queue_condition = @process_queue.new_cond
+			@process_queue = Queue.new
 		end
 		
 		def add(definition, *args)
@@ -22,20 +20,27 @@ module CSP
 		end
 		
 		def run
-			@process_queue += @processes
+			@processes.each do |p|
+				@process_queue << p
+			end
+
 			loop do
 				# Take processes from the queue if not empty
-				if not @process_queue.empty?
-					@process_queue.shift.run
-				elsif finished?
-					break
-				else
-					raise Deadlock
+				break if finished?				
+				p = @process_queue.shift
+				ret = p.run
+				if ret == :enqueue
+					enqueue p
+				elsif ret.is_a? Numeric
+					Thread.new do
+						sleep ret
+						@process_queue << p
+					end
 				end
 			end
 
 			puts "#{@processes.size} processes finished."
-
+						
 			values = @processes.map do |p|
 				p.value
 			end

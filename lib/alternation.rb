@@ -104,7 +104,8 @@ module CSP
 			end
 			
 			def open?
-				(Time.now - @start_time) > @time
+				Fiber.yield ((@start_time + @time) - Time.now)
+				true
 			end
 			
 			def on_execute
@@ -140,13 +141,11 @@ module CSP
 		private	
 		
 		def choose
-			while true
-				open_guards = @list.guards.select { |guard| guard.open? }
-				if open_guards.empty?
-					Fiber.yield
-				else
-					return open_guards.first
+			loop do
+				@list.guards.each do |g|
+					return g if g.open?
 				end
+				Fiber.yield :enqueue
 			end
 		end
 	
