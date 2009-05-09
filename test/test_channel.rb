@@ -20,11 +20,11 @@ class ChannelTestCase < Test::Unit::TestCase
 
 	def test_read_write
 	
-		writer = CSP::Process.define do |c|
+		writer = CSP::Process.define :writer do |c|
 			c.write("Hello")
 		end
 		
-		reader = CSP::Process.define do |c|
+		reader = CSP::Process.define :reader do |c|
 			c.read
 		end
 		

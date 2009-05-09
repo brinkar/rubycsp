@@ -18,16 +18,19 @@ module CSP
 			raise Poison if poisoned?
 			raise ArgumentError, "Invalid input end." unless @input_ends.include?(input_end)
 			@data << obj
+			p = input_end.process
 			if @data.size > @buffer
-				p = input_end.process
 				@write_queue << p
 				if @read_queue.empty?
-					Fiber.yield while @read_queue.empty?
+					Fiber.yield
 					@read_queue.shift.fiber.transfer								
 				else
-					@read_queue.shift.fiber.transfer
+					reader = @read_queue.shift
+					reader.fiber.transfer
+					reader.enqueue
 				end
 			end
+			raise Poison if poisoned?
 			return obj
 		end
 		
@@ -35,20 +38,23 @@ module CSP
 			raise Poison if poisoned?
 			raise ArgumentError, "Invalid output end." unless @output_ends.include?(output_end)
 			d = @data.size - @write_queue.size
+			p = output_end.process
 			if d > 0 and d <= @buffer
 				data = @data.shift
 			else
-				p = output_end.process
 				@read_queue << p
 				if @write_queue.empty?
-					Fiber.yield while @write_queue.empty?
+					Fiber.yield
 					data = @data.shift
 					@write_queue.shift.fiber.transfer
 				else
 					data = @data.shift
-					@write_queue.shift.fiber.transfer
+					writer = @write_queue.shift
+					writer.fiber.transfer
+					writer.enqueue
 				end
 			end
+			raise Poison if poisoned?
 			return data
 		end
 		
@@ -62,6 +68,9 @@ module CSP
 		
 		def poison
 			@poisoned = true
+			(@write_queue+@read_queue).each do |p|
+				p.finished = true
+			end
 		end
 		
 		def poisoned?

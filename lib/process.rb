@@ -63,6 +63,8 @@ module CSP
 		attr_reader :value
 		attr_reader :fiber
 		attr_accessor :pending
+		attr_writer :map
+		attr_writer :finished
 				
 		def initialize(definition, *args)
 			if not definition.is_a?(Definition)
@@ -75,6 +77,7 @@ module CSP
 			@args = args
 			@ends = []
 			@pending = false
+			@finished = false
 			@args.each do |arg|
 				if arg.is_a?(Channel::End)
 					arg.process = self
@@ -92,8 +95,9 @@ module CSP
 					e.poison
 				end
 			rescue FiberError
-				raise Finished
+				raise Finished, "'#{@definition.name}' is finished. Cannot be run."
 			end
+			@finished = true if not @fiber.alive?
 			@value = res
 			return res
 		end
@@ -104,6 +108,14 @@ module CSP
 			else
 				return @ends.select { |e| e.type == type }
 			end
+		end
+		
+		def finished?
+			@finished
+		end
+		
+		def enqueue
+			@map.enqueue self if @map
 		end
 
 	end

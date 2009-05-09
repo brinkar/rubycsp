@@ -16,7 +16,12 @@ class ChannelTestCase < Test::Unit::TestCase
 		end
 		
 		p1 = CSP::Process.new pd, 10
+				
+		assert (not p1.finished?)
+		
 		assert p1.run == 11
+		
+		assert p1.finished?
 		
 		assert_raise CSP::Process::Finished do
 			p1.run
@@ -25,6 +30,8 @@ class ChannelTestCase < Test::Unit::TestCase
 		p2 = CSP::Process.new :test, 20
 		
 		assert p2.run == 21
+		
+		assert p2.finished?		
 		
 		assert_raise CSP::Process::Finished do
 			p2.run
