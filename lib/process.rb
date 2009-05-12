@@ -56,6 +56,10 @@ module CSP
 				end
 			end
 			
+			def schedule(&block)
+				Fiber.yield block
+			end
+			
 		end
 
 		@definitions = []

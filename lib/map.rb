@@ -31,10 +31,10 @@ module CSP
 				ret = p.run
 				if ret == :enqueue
 					enqueue p
-				elsif ret.is_a? Numeric
+				elsif ret.is_a? Proc
 					Thread.new do
-						sleep ret
-						@process_queue << p
+						ret.call
+						enqueue p
 					end
 				end
 			end

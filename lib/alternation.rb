@@ -104,7 +104,8 @@ module CSP
 			end
 			
 			def open?
-				Fiber.yield ((@start_time + @time) - Time.now)
+				time = (@start_time + @time) - Time.now
+				CSP::Process.schedule { sleep time }
 				true
 			end
 			
